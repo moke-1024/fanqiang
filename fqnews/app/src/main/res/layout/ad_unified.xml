@@ -101,6 +101,5 @@
                 </LinearLayout>
             </LinearLayout>
         </LinearLayout>
-        <TextView style="@style/Theme.Shadowsocks.AdAttribution"/>
     </LinearLayout>
 </com.google.android.gms.ads.formats.UnifiedNativeAdView>

@@ -48,6 +48,4 @@ object PrefConstants {
 
     const val OPEN_BROWSER_DIRECTLY = "open_browser_directly"
 
-    const val USER_LANGUAGE = "user_language"
-    @JvmStatic var newsClickCount = 1L
 }

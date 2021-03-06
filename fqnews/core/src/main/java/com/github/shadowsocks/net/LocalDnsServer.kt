@@ -21,6 +21,7 @@
 package com.github.shadowsocks.net
 
 import android.util.Log
+import com.crashlytics.android.Crashlytics
 import com.github.shadowsocks.acl.AclMatcher
 import com.github.shadowsocks.bg.BaseService
 import com.github.shadowsocks.utils.printLog
@@ -81,7 +82,7 @@ class LocalDnsServer(private val localResolver: suspend (String) -> Array<InetAd
     private val monitor = ChannelMonitor()
 
     override val coroutineContext = SupervisorJob() + CoroutineExceptionHandler { _, t ->
-        if (t is IOException) printLog(Log.WARN, TAG, t.message) else printLog(t)
+        if (t is IOException) Crashlytics.log(Log.WARN, TAG, t.message) else printLog(t)
     }
     private val acl = aclSpawn?.let { async { it() } }
 
@@ -109,7 +110,7 @@ class LocalDnsServer(private val localResolver: suspend (String) -> Array<InetAd
         val request = try {
             Message(packet)
         } catch (e: IOException) {  // we cannot parse the message, do not attempt to handle it at all
-            printLog(Log.WARN, TAG, e.message)
+            Crashlytics.log(Log.WARN, TAG, e.message)
             return forward(packet)
         }
         return supervisorScope {
@@ -139,7 +140,7 @@ class LocalDnsServer(private val localResolver: suspend (String) -> Array<InetAd
                 val localResults = try {
                     withTimeout(TIMEOUT) { localResolver(host) }
                 } catch (_: TimeoutCancellationException) {
-                    printLog( "Local resolving timed out, falling back to remote resolving")
+                    Crashlytics.log(Log.WARN, TAG, "Local resolving timed out, falling back to remote resolving")
                     return@supervisorScope remote.await()
                 } catch (_: UnknownHostException) {
                     return@supervisorScope remote.await()
@@ -162,9 +163,9 @@ class LocalDnsServer(private val localResolver: suspend (String) -> Array<InetAd
             } catch (e: Exception) {
                 remote.cancel()
                 when (e) {
-                    is TimeoutCancellationException -> printLog("Remote resolving timed out")
+                    is TimeoutCancellationException -> Crashlytics.log(Log.WARN, TAG, "Remote resolving timed out")
                     is CancellationException -> { } // ignore
-                    is IOException -> printLog( e)
+                    is IOException -> Crashlytics.log(Log.WARN, TAG, e.message)
                     else -> printLog(e)
                 }
                 ByteBuffer.wrap(prepareDnsResponse(request).apply {

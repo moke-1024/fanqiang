@@ -28,6 +28,7 @@ import android.os.*
 import android.util.Log
 import androidx.core.content.getSystemService
 import androidx.core.os.bundleOf
+import com.crashlytics.android.Crashlytics
 import com.github.shadowsocks.BootReceiver
 import com.github.shadowsocks.Core
 import com.github.shadowsocks.Core.app
@@ -233,7 +234,7 @@ object BaseService {
             when {
                 s == State.Stopped -> startRunner()
                 s.canStop -> stopRunner(true)
-                else -> printLog(Log.WARN, tag, "Illegal state when invoking use: $s")
+                else -> Crashlytics.log(Log.WARN, tag, "Illegal state when invoking use: $s")
             }
         }
 
